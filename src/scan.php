@@ -11,7 +11,7 @@ if (!file_exists($vendorDirectory) || !is_dir($vendorDirectory)) {
 $apiKey = getenv('VIRUSTOTAL_API_KEY');
 
 if (!$apiKey) {
-    die('No Virus Total API key specified. Please specify one with `export VIRUSTOTAL_API_KEY=abc123`')
+    die('No Virus Total API key specified. Please specify one with `export VIRUSTOTAL_API_KEY=abc123`.');
 }
 
 $cacheDirectory = '/tmp/dependency-security-checker/cache/';
