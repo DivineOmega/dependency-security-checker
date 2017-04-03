@@ -1,4 +1,4 @@
 #!/usr/bin/env php
-
-require_once __DIR__'/../../vendor/divineomega/dependency-security-checker/src/scan.php';
+<?php
+require_once __DIR__.'/../src/scan.php';
 
