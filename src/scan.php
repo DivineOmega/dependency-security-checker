@@ -29,6 +29,8 @@ $exclusions = [
     $vendorDirectory.'/autoload.php',
     $vendorDirectory.'/composer/autoload_namespaces.php',
     $vendorDirectory.'/composer/autoload_real.php',
+    $vendorDirectory.'/composer/autoload_classmap.php',
+    $vendorDirectory.'/composer/autoload_files.php',
     $vendorDirectory.'/composer/autoload_psr4.php',
     $vendorDirectory.'/composer/autoload_static.php',
     $vendorDirectory.'/composer/installed.json'
