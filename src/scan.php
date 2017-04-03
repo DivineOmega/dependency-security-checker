@@ -66,7 +66,7 @@ function directoryScan($directory)
                 $url = fileSubmit($file);
                 if ($url) {
                     echo ", ";
-                    echo 'submitted: '.$url;
+                    echo 'submitted';
                 }
             }
             
