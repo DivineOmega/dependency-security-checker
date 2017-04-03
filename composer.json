@@ -3,7 +3,8 @@
     "description": "",
     "type": "library",
     "require": {
-        "jayzeng/virustotalapi": "^0.1.9"
+        "jayzeng/virustotalapi": "^0.1.9",
+        "rapidwebltd/rw-file-cache": "^1.0"
     },
     "license": "LGPL3",
     "authors": [
