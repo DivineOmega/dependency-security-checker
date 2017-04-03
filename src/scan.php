@@ -11,15 +11,18 @@ if (!file_exists($vendorDirectory) || !is_dir($vendorDirectory)) {
 $apiKey = getenv('VIRUSTOTAL_API_KEY');
 
 if (!$apiKey) {
-    die('No Virus Total API key specified. Please specify one with `export VIRUSTOTAL_API_KEY=abc123`.');
+    die('No Virus Total API key specified. Please specify one with `export VIRUSTOTAL_API_KEY=abc123`.'.PHP_EOL);
 }
 
-$cacheDirectory = '~/.cache/dependency-security-checker/';
+$cacheDirectory = $SERVER['HOME'].'/.cache/dependency-security-checker/';
 
 $vtFile = new VirusTotal\File($apiKey);
 
 if (!file_exists($cacheDirectory)) {
-    mkdir($cacheDirectory, 0777, true);
+    $directoryMade = mkdir($cacheDirectory, 0777, true);
+    if (!$directoryMade) {
+        die('Unable to create cache directory at: '.$cacheDirectory.PHP_EOL);
+    }
 }
 
 $cache = new \rapidweb\RWFileCache\RWFileCache();
