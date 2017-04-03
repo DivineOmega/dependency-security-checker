@@ -1,6 +1,6 @@
 <?php
 
-$vendorDirectory = realpath(__DIR__.'/../../../vendor');
+$vendorDirectory = realpath(__DIR__.'/../../../../vendor');
 
 require_once $vendorDirectory.'/autoload.php';
 
