@@ -17,5 +17,6 @@
         "psr-4": {
             "DivineOmega\\DependencySecurityChecker\\": "src/"
         }
-    }
+    },
+    "bin": ["bin/dependency-security-checker"]
 }
