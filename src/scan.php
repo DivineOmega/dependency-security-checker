@@ -14,7 +14,7 @@ if (!$apiKey) {
     die('No Virus Total API key specified. Please specify one with `export VIRUSTOTAL_API_KEY=abc123`.'.PHP_EOL);
 }
 
-$cacheDirectory = $SERVER['HOME'].'/.cache/dependency-security-checker/';
+$cacheDirectory = $_SERVER['HOME'].'/.cache/dependency-security-checker/';
 
 $vtFile = new VirusTotal\File($apiKey);
 
