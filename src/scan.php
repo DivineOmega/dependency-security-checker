@@ -2,7 +2,7 @@
 
 $vendorDirectory = realpath(__DIR__.'/../../../vendor');
 
-require_once $vendorDirector.'/autoload.php';
+require_once $vendorDirectory.'/autoload.php';
 
 if (!file_exists($vendorDirectory) || !is_dir($vendorDirectory)) {
     die('Error locating vendor directory at: '.$vendorDirectory);
