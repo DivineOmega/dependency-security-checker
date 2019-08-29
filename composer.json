@@ -3,8 +3,9 @@
     "description": "",
     "type": "library",
     "require": {
-        "rapidwebltd/rw-file-cache": "^1.0",
-        "jayzeng/virustotalapi": "^0.1.9"
+        "divineomega/do-file-cache": "^2.0",
+        "jayzeng/virustotalapi": "^0.1.9",
+        "divineomega/php-cli-progress-bar": "^2.0"
     },
     "license": "LGPL-3.0-only",
     "authors": [

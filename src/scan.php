@@ -1,12 +1,17 @@
 <?php
 
+use DivineOmega\CliProgressBar\ProgressBar;
+use DivineOmega\DOFileCache\DOFileCache;
+
 $vendorDirectory = realpath(__DIR__.'/../../../../vendor');
+if (!file_exists($vendorDirectory) || !is_dir($vendorDirectory)) {
+    $vendorDirectory = realpath(__DIR__.'/../vendor');
+    if (!file_exists($vendorDirectory) || !is_dir($vendorDirectory)) {
+        die('Error locating vendor directory.');
+    }
+}
 
 require_once $vendorDirectory.'/autoload.php';
-
-if (!file_exists($vendorDirectory) || !is_dir($vendorDirectory)) {
-    die('Error locating vendor directory at: '.$vendorDirectory);
-}
 
 $apiKey = getenv('VIRUSTOTAL_API_KEY');
 
@@ -25,8 +30,8 @@ if (!file_exists($cacheDirectory)) {
     }
 }
 
-$cache = new \rapidweb\RWFileCache\RWFileCache();
-$cache->changeConfig(['cacheDirectory' => $cacheDirectory, 'unixLoadUpperThreshold'  => 999]);
+$cache = new DOFileCache();
+$cache->changeConfig(['cacheDirectory' => $cacheDirectory]);
 
 $exclusions = [
     $vendorDirectory.'/autoload.php',
@@ -39,9 +44,37 @@ $exclusions = [
     $vendorDirectory.'/composer/installed.json'
 ];
 
-directoryScan($vendorDirectory);
+$filesToScan = [];
 
-function directoryScan($directory) 
+directoryScan($vendorDirectory, $filesToScan);
+
+echo count($filesToScan)." files found.".PHP_EOL;
+
+$progressBar = new ProgressBar();
+$progressBar->setMaxProgress(count($filesToScan));
+
+$progressBar->display();
+
+foreach ($filesToScan as $file) {
+    $fileWithoutVendorDir = str_replace($vendorDirectory, '', $file);
+
+    $progressBar->setMessage($fileWithoutVendorDir)->display();
+
+    $status = fileScan($file);
+
+    if ($status=='unknown') {
+        $url = fileSubmit($file);
+        if ($url) {
+            // Submitted file
+        }
+    }
+
+    $progressBar->advance()->display();
+}
+
+$progressBar->complete();
+
+function directoryScan($directory, &$filesToScan)
 {
     $files = glob($directory.'/*');
     $dotFiles = glob($directory.'/.*');
@@ -58,24 +91,11 @@ function directoryScan($directory)
 
         if (is_dir($file)) {
 
-            directoryScan($file);
+            directoryScan($file, $filesToScan);
 
         } else {
 
-            echo $file;
-            echo "\t";
-            $status = fileScan($file);
-            echo $status;
-
-            if ($status=='unknown') {
-                $url = fileSubmit($file);
-                if ($url) {
-                    echo ", ";
-                    echo 'submitted';
-                }
-            }
-            
-            echo PHP_EOL;
+            $filesToScan[] = $file;
 
         }
     }
