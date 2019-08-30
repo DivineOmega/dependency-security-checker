@@ -76,9 +76,6 @@ if ($results['safe']) {
 
 if ($results['unknown']) {
     echo '* ' . count($results['unknown']) . ' packages still being scanned. Try again in a few minutes.' . PHP_EOL;
-    foreach ($results['unknown'] as $unknownPackage) {
-        echo ' * STILL SCANNING: ' . $unknownPackage['package_name'] . ' - '.$unknownPackage['url']. PHP_EOL;
-    }
 }
 
 if ($results['unsafe']) {
