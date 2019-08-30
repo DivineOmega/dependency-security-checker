@@ -37,8 +37,6 @@ $packages = array_values(array_filter(glob($vendorDirectory.'/*/*'), function ($
     return is_dir($package);
 }));
 
-echo count($packages)." packages found.".PHP_EOL;
-
 $progressBar = new ProgressBar();
 $progressBar->setMaxProgress(count($packages));
 
@@ -55,16 +53,41 @@ foreach ($packages as $package) {
 
     $progressBar->setMessage($packageName)->display();
 
-    $status = packageScan($package);
+    $result = packageScan($package);
+    $status = $result['status'];
+    $url = $result['url'];
 
-    $results[$status][] = $packageName;
+    $results[$status][] = [
+        'package_name' => $packageName,
+        'url' => $url,
+    ];
 
     $progressBar->advance()->display();
 }
 
 $progressBar->complete();
 
-var_dump($results);
+echo 'Results: '.PHP_EOL;
+echo '* '.count($packages)." packages scanned.".PHP_EOL;
+
+if ($results['safe']) {
+    echo '* ' . count($results['safe']) . ' packages are safe.' . PHP_EOL;
+}
+
+if ($results['unknown']) {
+    echo '* ' . count($results['unknown']) . ' packages still being scanned. Try again in a few minutes.' . PHP_EOL;
+    foreach ($results['unknown'] as $unknownPackage) {
+        echo ' * STILL SCANNING: ' . $unknownPackage['package_name'] . ' - '.$unknownPackage['url']. PHP_EOL;
+    }
+}
+
+if ($results['unsafe']) {
+    echo '* ' . count($results['unsafe']) . ' packages may be UNSAFE!' . PHP_EOL;
+
+    foreach ($results['unsafe'] as $unsafePackages) {
+        echo ' * UNSAFE: ' . $unsafePackages['package_name'] . ' - '.$unsafePackages['url']. PHP_EOL;
+    }
+}
 
 function packageScan($package)
 {
@@ -127,6 +150,8 @@ function packageScan($package)
             }
         }
 
+        $url = $response['permalink'];
+
     }
 
     if ($status!='safe') {
@@ -135,7 +160,10 @@ function packageScan($package)
 
     unlink($packageZipFile);
 
-    return $status;
+    return [
+        'status' => $status,
+        'url' => $url,
+    ];
 }
 
 function fileSubmit($file)
