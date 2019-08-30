@@ -44,6 +44,12 @@ $progressBar->setMaxProgress(count($packages));
 
 $progressBar->display();
 
+$results = [
+    'safe' => [],
+    'unsafe' => [],
+    'unknown' => [],
+];
+
 foreach ($packages as $package) {
     $packageName = str_replace($vendorDirectory.'/', '', $package);
 
@@ -51,10 +57,14 @@ foreach ($packages as $package) {
 
     $status = packageScan($package);
 
+    $results[$status][] = $packageName;
+
     $progressBar->advance()->display();
 }
 
 $progressBar->complete();
+
+var_dump($results);
 
 function packageScan($package)
 {
