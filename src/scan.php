@@ -33,83 +33,61 @@ if (!file_exists($cacheDirectory)) {
 $cache = new DOFileCache();
 $cache->changeConfig(['cacheDirectory' => $cacheDirectory]);
 
-$exclusions = [
-    $vendorDirectory.'/autoload.php',
-    $vendorDirectory.'/composer/autoload_namespaces.php',
-    $vendorDirectory.'/composer/autoload_real.php',
-    $vendorDirectory.'/composer/autoload_classmap.php',
-    $vendorDirectory.'/composer/autoload_files.php',
-    $vendorDirectory.'/composer/autoload_psr4.php',
-    $vendorDirectory.'/composer/autoload_static.php',
-    $vendorDirectory.'/composer/installed.json'
-];
+$packages = array_values(array_filter(glob($vendorDirectory.'/*/*'), function ($package) {
+    return is_dir($package);
+}));
 
-$filesToScan = [];
-
-directoryScan($vendorDirectory, $filesToScan);
-
-echo count($filesToScan)." files found.".PHP_EOL;
+echo count($packages)." packages found.".PHP_EOL;
 
 $progressBar = new ProgressBar();
-$progressBar->setMaxProgress(count($filesToScan));
+$progressBar->setMaxProgress(count($packages));
 
 $progressBar->display();
 
-foreach ($filesToScan as $file) {
-    $fileWithoutVendorDir = str_replace($vendorDirectory, '', $file);
+foreach ($packages as $package) {
+    $packageName = str_replace($vendorDirectory.'/', '', $package);
 
-    $progressBar->setMessage($fileWithoutVendorDir)->display();
+    $progressBar->setMessage($packageName)->display();
 
-    $status = fileScan($file);
-
-    if ($status=='unknown') {
-        $url = fileSubmit($file);
-        if ($url) {
-            // Submitted file
-        }
-    }
+    $status = packageScan($package);
 
     $progressBar->advance()->display();
 }
 
 $progressBar->complete();
 
-function directoryScan($directory, &$filesToScan)
+function packageScan($package)
 {
-    $files = glob($directory.'/*');
-    $dotFiles = glob($directory.'/.*');
+    global $vtFile, $cache;
 
-    $files = array_merge($files, $dotFiles);
+    $packageZipFile = sys_get_temp_dir().'/'.sha1($package);
 
-    foreach($files as $file) {
+    // Initialize archive object
+    $zip = new ZipArchive();
+    $zip->open($packageZipFile, ZipArchive::CREATE | ZipArchive::OVERWRITE );
 
-        $baseName = basename($file);
+    // Create recursive directory iterator
+    /** @var SplFileInfo[] $files */
+    $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($package), RecursiveIteratorIterator::LEAVES_ONLY);
 
-        if ($baseName=='.' || $baseName=='..') {
-            continue;
-        }
+    foreach ($files as $name => $file)
+    {
+        // Skip directories (they would be added automatically)
+        if (!$file->isDir())
+        {
+            // Get real and relative path for current file
+            $filePath = $file->getRealPath();
+            $relativePath = substr($filePath, strlen($package) + 1);
 
-        if (is_dir($file)) {
-
-            directoryScan($file, $filesToScan);
-
-        } else {
-
-            $filesToScan[] = $file;
-
+            // Add current file to archive
+            $zip->addFile($filePath, $relativePath);
         }
     }
-}
 
-function fileScan($file)
-{
-    global $vtFile, $cache, $exclusions;
+    // Zip archive will be created only after closing object
+    $zip->close();
 
-    if (in_array($file, $exclusions)) {
-        return 'skipped';
-    }
-
-    $hash = hash_file('sha256', $file);
+    $hash = hash_file('sha256', $packageZipFile);
 
     $response = $cache->get($hash);
 
@@ -125,6 +103,8 @@ function fileScan($file)
     if (!isset($response['scans']) || !$response['scans']) {
         
         $status = 'unknown';
+
+        $url = fileSubmit($packageZipFile);
         
     } else {
 
@@ -143,16 +123,14 @@ function fileScan($file)
         $cache->delete($hash);
     }
 
+    unlink($packageZipFile);
+
     return $status;
 }
 
 function fileSubmit($file)
 {
-    global $vtFile, $exclusions;
-
-    if (in_array($file, $exclusions)) {
-        return 'skipped';
-    }
+    global $vtFile;
 
     sleep(15);
     $response = $vtFile->scan($file);

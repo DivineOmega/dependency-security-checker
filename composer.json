@@ -5,7 +5,8 @@
     "require": {
         "divineomega/do-file-cache": "^2.0",
         "jayzeng/virustotalapi": "^0.1.9",
-        "divineomega/php-cli-progress-bar": "^2.0"
+        "divineomega/php-cli-progress-bar": "^2.0",
+        "ext-zip": "*"
     },
     "license": "LGPL-3.0-only",
     "authors": [
